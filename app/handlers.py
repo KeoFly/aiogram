@@ -1,13 +1,24 @@
+import asyncio
 from aiogram import F, Router
 from aiogram.types import Message
 from aiogram.filters import Command, CommandStart, CommandObject
+from aiogram.enums import ChatAction
 
 router = Router()
 
 
-@router.message(CommandStart(deep_link=True, magic=F.args.isdigit()))
-async def cmd_start(message: Message, command: CommandObject):
-    await message.answer(text=f'Привет! Ты пришел от {command.args}')
+@router.message(CommandStart())
+async def cmd_start(message: Message):
+    await message.bot.send_chat_action(chat_id=message.from_user.id,
+                                       action=ChatAction.TYPING)
+    await asyncio.sleep(2)
+    await message.answer(text=f'Привет!')
+
+@router.message(Command('test'))
+async def cmd_test(message: Message):
+    await message.bot.send_message(chat_id=message.chat.id,
+                                   message_thread_id=message.message_thread_id,
+                                   text='OK')
 
 @router.message(Command('help'))
 async def help(message:Message):
@@ -27,6 +38,9 @@ async def echo(message: Message):
 
 @router.message(F.photo)
 async def echo(message: Message):
+    await message.bot.send_chat_action(chat_id=message.from_user.id,
+                                       action=ChatAction.UPLOAD_PHOTO)
+    await asyncio.sleep(2)
     photo_id = message.photo[-1].file_id
     await message.answer_photo(photo=photo_id)
 
