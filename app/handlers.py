@@ -1,8 +1,10 @@
 import asyncio
 from aiogram import F, Router
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, CommandStart, CommandObject
 from aiogram.enums import ChatAction
+
+import app.keyboards as kb
 
 router = Router()
 
@@ -11,8 +13,17 @@ router = Router()
 async def cmd_start(message: Message):
     await message.bot.send_chat_action(chat_id=message.from_user.id,
                                        action=ChatAction.TYPING)
-    await asyncio.sleep(2)
-    await message.answer(text=f'Привет!')
+    await message.answer(text=f'Привет!', reply_markup=kb.main_inline)
+
+@router.callback_query(F.data == 'catalog')
+async def cmd_catalog(callback: CallbackQuery):
+    await callback.answer('')
+    await callback.message.answer('Вы открыли каталог',
+                                  reply_markup=await kb.catalog())
+
+@router.message(F.text == 'Корзина')
+async def basket(message: Message):
+    await message.answer('Ваша корзина пуста!')
 
 @router.message(Command('test'))
 async def cmd_test(message: Message):
